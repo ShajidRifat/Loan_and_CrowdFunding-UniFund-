@@ -7,21 +7,21 @@ UniFund is a comprehensive dual-engine platform designed for managing student lo
 
 ✨ Key Features
 
-* Multi-Role Architecture:** Distinct, secure interfaces tailored specifically for Students, Administrators, and Donors.
+* Multi-Role Architecture: Distinct, secure interfaces tailored specifically for Students, Administrators, and Donors.
   
-* Student Loan Management:** End-to-end lifecycle tracking—from application submission to repayment scheduling and real-time approval status.
+* Student Loan Management: End-to-end lifecycle tracking—from application submission to repayment scheduling and real-time approval status.
   
-* Educational Crowdfunding:** Intuitive tools to create, share, and manage funding campaigns for specific academic needs.
+* Educational Crowdfunding: Intuitive tools to create, share, and manage funding campaigns for specific academic needs.
   
-* Admin Control Center:** Comprehensive oversight capabilities for user management, role assignments, and platform monitoring.
+* Admin Control Center: Comprehensive oversight capabilities for user management, role assignments, and platform monitoring.
   
-* Proactive Security:** Built-in fraud detection system with automated alerts for suspicious activities to ensure platform integrity.
+* Proactive Security: Built-in fraud detection system with automated alerts for suspicious activities to ensure platform integrity.
   
-* Modern UI/UX:** Highly responsive, intuitive design featuring smooth Framer Motion animations and a polished Tailwind CSS aesthetic.
+* Modern UI/UX: Highly responsive, intuitive design featuring smooth Framer Motion animations and a polished Tailwind CSS aesthetic.
 
 
 
-🛠️ Technical Stack
+
 
 ### Frontend
 
@@ -29,11 +29,12 @@ UniFund is a comprehensive dual-engine platform designed for managing student lo
   
 * Styling & UI: Tailwind CSS, Framer Motion, Lucide React
   
-* Architecture:** React Router DOM
+* Architecture: React Router DOM
 
 ### Backend & Data
 
 * Server:PHP (Local API Server)
+  
 * Database: MySQL
 
 
