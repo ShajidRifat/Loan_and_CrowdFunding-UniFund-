@@ -28,8 +28,6 @@ UniFund is a comprehensive dual-engine platform designed for managing student lo
 * Core: React 19, TypeScript, Vite
   
 * Styling & UI: Tailwind CSS, Framer Motion, Lucide React
-  
-* Architecture: React Router DOM
 
 ### Backend & Data
 
