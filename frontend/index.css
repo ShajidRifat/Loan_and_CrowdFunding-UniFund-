@@ -2,19 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Main Stylesheet - Premium Edition (v2) */
+
 
 @layer base {
   :root {
-      /* Modern Color Palette - Deep Indigo & Teal */
+  
       --primary: #4f46e5;
       --primary-light: #818cf8;
       --primary-dark: #3730a3;
 
       --secondary: #0d9488;
-      /* Teal 600 */
+      
       --accent: #f59e0b;
-      /* Amber 500 */
+    
 
       --bg-color: #f8fafc;
       --text-main: #0f172a;
@@ -41,9 +41,7 @@
 }
 
 @layer utilities {
-  /* --- Advanced Animations --- */
-
-  /* 1. Logo Animation (Draw Stroke) */
+ 
   .logo-path {
       stroke-dasharray: 100;
       stroke-dashoffset: 100;
@@ -56,7 +54,7 @@
       }
   }
 
-  /* 2. 3D Tilt Effect (Hover) */
+  
   .tilt-card {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       transform-style: preserve-3d;
@@ -67,7 +65,7 @@
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   }
 
-  /* 3. Ripple Effect (Buttons) */
+  
   .btn-ripple {
       position: relative;
       overflow: hidden;
@@ -91,7 +89,7 @@
       height: 300px;
   }
 
-  /* 4. Staggered Entrance */
+  
   .stagger-1 { animation: slideUp 0.6s ease-out forwards 0.1s; opacity: 0; }
   .stagger-2 { animation: slideUp 0.6s ease-out forwards 0.2s; opacity: 0; }
   .stagger-3 { animation: slideUp 0.6s ease-out forwards 0.3s; opacity: 0; }
@@ -102,7 +100,6 @@
       to { opacity: 1; transform: translateY(0); }
   }
 
-  /* 5. Floating Animation */
   .float {
       animation: float 6s ease-in-out infinite;
   }
@@ -113,7 +110,7 @@
       100% { transform: translateY(0px); }
   }
 
-  /* 6. Pulse Ring */
+
   .pulse-ring::before {
       content: '';
       position: absolute;
@@ -131,7 +128,6 @@
       100% { transform: scale(1.4); opacity: 0; }
   }
 
-  /* --- Glassmorphism --- */
   .glass {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -146,7 +142,7 @@
       color: white;
   }
 
-  /* --- Utilities --- */
+ 
   .text-gradient {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       -webkit-background-clip: text;
@@ -163,7 +159,7 @@
       background-size: 100% 100%;
   }
 
-  /* Modal Styles */
+
   .modal-overlay {
       position: fixed;
       top: 0;
@@ -218,7 +214,7 @@
       color: #ef4444;
   }
 
-  /* Dashboard Specific Styles */
+ 
   .sidebar-link {
       display: flex;
       align-items: center;
@@ -241,7 +237,7 @@
       font-weight: 600;
   }
 
-  /* Chart Animation */
+
   @keyframes grow-up {
       from { height: 0; opacity: 0; }
       to { opacity: 1; }
@@ -252,7 +248,7 @@
       transform-origin: bottom;
   }
 
-  /* SVG Chart Animations */
+
   @keyframes draw-line {
       from { stroke-dashoffset: 1000; }
       to { stroke-dashoffset: 0; }
@@ -293,7 +289,7 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
-  /* Gradient Animation */
+ 
   @keyframes gradient-xy {
       0%, 100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -304,7 +300,7 @@
       animation: gradient-xy 6s ease infinite;
   }
 
-  /* Progress Animation */
+ 
   @keyframes progress {
       from { stroke-dashoffset: 502; }
   }
@@ -329,7 +325,7 @@
   }
 }
 
-/* Scrollbar */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -344,7 +340,6 @@
   background: #94a3b8;
 }
 
-/* Custom Advanced Gradients */
 .bg-mesh {
     background-color: #0f172a;
     background-image:
