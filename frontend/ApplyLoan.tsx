@@ -24,6 +24,7 @@ export default function ApplyLoan() {
   });
 
   const [files, setFiles] = useState<File[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
 
   useEffect(() => {
     const user = auth.getUser();
@@ -57,9 +58,56 @@ export default function ApplyLoan() {
     setStep(s => Math.max(s - 1, 1));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
-          setFiles(Array.from(e.target.files));
+          const selectedFiles = Array.from(e.target.files);
+          setFiles(selectedFiles);
+          
+          const base64Files: string[] = [];
+          for (const file of selectedFiles) {
+              const base64 = await new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                      const result = ev.target?.result as string;
+                      if (file.type.startsWith('image/')) {
+                          const img = new Image();
+                          img.onload = () => {
+                              const MAX_WIDTH = 800;
+                              const MAX_HEIGHT = 800;
+                              let width = img.width;
+                              let height = img.height;
+                              if (width > height) {
+                                  if (width > MAX_WIDTH) {
+                                      height *= MAX_WIDTH / width;
+                                      width = MAX_WIDTH;
+                                  }
+                              } else {
+                                  if (height > MAX_HEIGHT) {
+                                      width *= MAX_HEIGHT / height;
+                                      height = MAX_HEIGHT;
+                                  }
+                              }
+                              const canvas = document.createElement('canvas');
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext('2d');
+                              if (ctx) {
+                                  ctx.drawImage(img, 0, 0, width, height);
+                                  resolve(canvas.toDataURL('image/jpeg', 0.7));
+                              } else {
+                                  resolve(result);
+                              }
+                          };
+                          img.src = result;
+                      } else {
+                          resolve(result);
+                      }
+                  };
+                  reader.readAsDataURL(file);
+              });
+              base64Files.push(base64);
+          }
+          setUploadedDocs(base64Files);
       }
   };
 
@@ -67,6 +115,10 @@ export default function ApplyLoan() {
     e.preventDefault();
     if (!formData.termsChecked) {
       alert('Please agree to the Terms & Conditions');
+      return;
+    }
+    if (formData.amount <= 0 || formData.amount > 50000) {
+      alert('Maximum loan requested amount is ৳50,000');
       return;
     }
     setLoading(true);
@@ -77,7 +129,8 @@ export default function ApplyLoan() {
         amount: formData.amount,
         purpose: `${formData.purpose} Loan`,
         duration: parseInt(formData.term),
-        category: formData.purpose
+        category: formData.purpose,
+        documents: uploadedDocs.length > 0 ? JSON.stringify(uploadedDocs) : null
       });
       setSuccessModal(true);
     } catch (err: any) {
