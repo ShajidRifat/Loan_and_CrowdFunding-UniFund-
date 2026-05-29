@@ -278,9 +278,40 @@ function DonationForm({ campId, onClose, userId }: any) {
     const [amount, setAmount] = useState(500);
     const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
     const [errorMsg, setErrorMsg] = useState('');
+    const [limits, setLimits] = useState<{ already_donated: number; remaining_goal: number } | null>(null);
+    const [loadingLimits, setLoadingLimits] = useState(true);
+
+    useEffect(() => {
+        const fetchLimits = async () => {
+            try {
+                const data = await apiCall(`api/get_user_donation_limit.php?campaign_id=${campId}&user_id=${userId}`);
+                setLimits(data);
+                
+                const maxAllowed = Math.min(50000 - (data.already_donated || 0), data.remaining_goal || 0);
+                if (maxAllowed > 0 && maxAllowed < 500) {
+                    setAmount(maxAllowed);
+                } else if (maxAllowed <= 0) {
+                    setAmount(0);
+                }
+            } catch (err) {
+                console.error("Failed to load donation limits", err);
+            } finally {
+                setLoadingLimits(false);
+            }
+        };
+        fetchLimits();
+    }, [campId, userId]);
+
+    const alreadyDonated = limits?.already_donated || 0;
+    const remainingGoal = limits?.remaining_goal || 0;
+    const maxAllowed = Math.max(0, Math.min(50000 - alreadyDonated, remainingGoal));
 
     const processDonation = async () => {
         if (!amount || amount <= 0) { alert('Please enter a valid amount'); return; }
+        if (amount > maxAllowed) {
+            alert(`Maximum allowed donation for this transaction is ৳${maxAllowed.toLocaleString()}`);
+            return;
+        }
         setStatus('processing');
         try {
             await apiCall('api/donate.php', 'POST', {
@@ -296,6 +327,15 @@ function DonationForm({ campId, onClose, userId }: any) {
             setStatus('error');
         }
     };
+
+    if (loadingLimits) {
+        return (
+            <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-4"></div>
+                <p className="text-sm text-slate-500">Checking donation allowance...</p>
+            </div>
+        );
+    }
 
     if (status === 'processing') return (
         <div className="text-center py-8">
@@ -335,15 +375,35 @@ function DonationForm({ campId, onClose, userId }: any) {
             <p className="text-slate-600 mb-6">Donate to this Campaign</p>
             <div className="text-left">
                 <div className="bg-slate-50 p-4 rounded-xl mb-6">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Donation Amount</label>
+                    <div className="flex justify-between items-center mb-2">
+                        <label className="block text-xs font-bold text-slate-500 uppercase">Donation Amount</label>
+                        {alreadyDonated > 0 && (
+                            <span className="text-[10px] text-slate-400 font-bold">You previously gave ৳{alreadyDonated.toLocaleString()}</span>
+                        )}
+                    </div>
                     <div className="relative">
                         <span className="absolute left-4 top-3.5 text-slate-400 font-bold">৳</span>
-                        <input type="number" value={amount} onChange={e => setAmount(parseFloat(e.target.value))} min="10" className="w-full pl-8 pr-4 py-3 rounded-lg border border-slate-200 font-bold text-slate-900 focus:ring-2 focus:ring-brand-500 outline-none" />
+                        <input type="number" value={amount} onChange={e => setAmount(parseFloat(e.target.value))} min="10" max={maxAllowed} disabled={maxAllowed <= 0} className="w-full pl-8 pr-4 py-3 rounded-lg border border-slate-200 font-bold text-slate-900 focus:ring-2 focus:ring-brand-500 outline-none disabled:bg-slate-100 disabled:text-slate-400" />
                     </div>
+                    {maxAllowed <= 0 ? (
+                        <p className="text-[11px] text-red-500 mt-2 font-bold animate-pulse">
+                            You've hit the ৳50,000 limit for this campaign (or it's fully funded).
+                        </p>
+                    ) : (
+                        <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                            Max allowed: <span className="font-bold text-slate-700">৳{maxAllowed.toLocaleString()}</span> (৳50,000 cumulative limit per donor/campaign).
+                        </p>
+                    )}
                 </div>
-                <button onClick={processDonation} className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-500/20">
-                    Confirm Donation
-                </button>
+                {maxAllowed > 0 ? (
+                    <button onClick={processDonation} className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-brand-500/20">
+                        Confirm Donation
+                    </button>
+                ) : (
+                    <button className="w-full py-3 bg-slate-200 text-slate-400 font-bold rounded-xl cursor-not-allowed" disabled>
+                        Limit Reached
+                    </button>
+                )}
             </div>
         </div>
     );
