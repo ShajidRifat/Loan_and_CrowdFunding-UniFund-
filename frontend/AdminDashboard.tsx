@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { apiCall, auth, formatCurrency, getRiskColor } from '../lib/utils';
 import { 
-  ClipboardList, Megaphone, Users, Plus, Eye, X, Check, Lock, Unlock, Trash2, AlertTriangle
+  ClipboardList, Megaphone, Users, Plus, Eye, X, Check, Lock, Unlock, Trash2, AlertTriangle, FileText
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -137,6 +137,16 @@ export default function AdminDashboard() {
   const viewLoanDetails = (id: string | number) => {
       const loan = data?.loans?.find((l: any) => l.loan_id == id);
       if (!loan) return;
+
+      let docs: string[] = [];
+      if (loan.document_url) {
+          try {
+              docs = JSON.parse(loan.document_url);
+          } catch (e) {
+              docs = [loan.document_url];
+          }
+      }
+
       setModalContent({
           title: 'Loan Details',
           content: (
@@ -163,6 +173,37 @@ export default function AdminDashboard() {
                       <div className="text-xs text-slate-500 mb-2">Application Reason / Description</div>
                       <p className="text-sm text-slate-700 leading-relaxed">{loan.loan_reason || loan.description || 'No detailed description provided.'}</p>
                   </div>
+
+                  {docs.length > 0 && (
+                      <div className="mt-6 border-t border-slate-200 pt-4">
+                          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Submitted Verification Documents ({docs.length})</div>
+                          <div className="grid grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-1">
+                              {docs.map((doc, idx) => {
+                                  const isImg = doc.startsWith('data:image/');
+                                  return (
+                                      <div key={idx} className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex flex-col h-32 group relative shadow-sm hover:border-brand-400 transition-all">
+                                          {isImg ? (
+                                              <>
+                                                  <img src={doc} alt={`Doc ${idx+1}`} className="w-full h-full object-cover" />
+                                                  <a href={doc} download={`loan_doc_${loan.loan_id}_${idx+1}.jpg`} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-all duration-300">
+                                                      Download Image
+                                                  </a>
+                                              </>
+                                          ) : (
+                                              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                                                  <FileText className="h-8 w-8 text-brand-600 mb-1" />
+                                                  <span className="text-[10px] font-bold text-slate-700 truncate max-w-full">Document #{idx+1}</span>
+                                                  <a href={doc} download={`loan_doc_${loan.loan_id}_${idx+1}`} className="mt-2 px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-bold rounded-lg shadow-sm transition-colors">
+                                                      Download File
+                                                  </a>
+                                              </div>
+                                          )}
+                                      </div>
+                                  );
+                              })}
+                          </div>
+                      </div>
+                  )}
               </div>
           )
       });
@@ -175,6 +216,11 @@ export default function AdminDashboard() {
           title: 'Campaign Details',
           content: (
               <div className="space-y-4">
+                  {camp.image_url && (
+                      <div className="h-48 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                          <img src={camp.image_url} alt="Cover Preview" className="w-full h-full object-cover" />
+                      </div>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                           <div className="text-xs text-slate-500 mb-1">Creator</div>
@@ -287,14 +333,35 @@ export default function AdminDashboard() {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {campaigns.length > 0 ? campaigns.map((camp: any, idx: number) => (
-                  <motion.div variants={itemVariants} whileHover={{ y: -4 }} key={idx} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-full relative">
-                        <span className={`absolute top-4 right-4 text-xs font-bold px-2 py-1 rounded ${camp.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} uppercase`}>{camp.status}</span>
-                        <h3 className="font-bold text-slate-900 mb-1 pr-16">{camp.title}</h3>
-                        <p className="text-xs text-slate-500 mb-4">Goal: {formatCurrency(camp.goal_amount)}</p>
-                        <div className="flex items-center justify-end gap-2 mt-auto">
-                            <button onClick={() => viewCampaignDetails(camp.campaign_id)} className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="View Details"><Eye className="h-4 w-4" /></button>
-                            {(camp.status === 'draft' || camp.status === 'active') && <button onClick={() => handleRejectCampaign(camp.campaign_id)} className="text-xs font-bold text-red-600 hover:text-red-700">Reject/Stop</button>}
-                            {camp.status === 'draft' && <button onClick={() => handleApproveCampaign(camp.campaign_id)} className="text-xs font-bold text-brand-600 hover:text-brand-700">Approve</button>}
+                  <motion.div variants={itemVariants} whileHover={{ y: -4 }} key={idx} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full relative group">
+                        <div className="h-32 bg-slate-100 relative overflow-hidden">
+                            {camp.image_url ? (
+                                <img src={camp.image_url} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                                <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100"></div>
+                            )}
+                            <span className={`absolute top-4 right-4 text-xs font-bold px-2 py-1 rounded ${camp.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} uppercase shadow-sm`}>{camp.status}</span>
+                        </div>
+                        <div className="p-5 flex-grow flex flex-col">
+                            <h3 className="font-bold text-slate-900 mb-1 pr-4 line-clamp-1">{camp.title}</h3>
+                            <p className="text-xs font-medium text-slate-500 mb-3">by {camp.student_name || 'Student'} • Goal: {formatCurrency(camp.goal_amount)}</p>
+                            <p className="text-slate-600 text-xs line-clamp-2 mb-4 flex-grow">{camp.description || 'No description provided.'}</p>
+                            <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+                                <button onClick={() => viewCampaignDetails(camp.campaign_id)} className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors flex items-center gap-1" title="View Details">
+                                    <Eye className="h-4 w-4" />
+                                    <span className="text-xs font-bold">Details</span>
+                                </button>
+                                {(camp.status === 'draft' || camp.status === 'active') && (
+                                    <button onClick={() => handleRejectCampaign(camp.campaign_id)} className="text-xs font-bold text-red-600 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded-md transition-colors">
+                                        Reject/Stop
+                                    </button>
+                                )}
+                                {camp.status === 'draft' && (
+                                    <button onClick={() => handleApproveCampaign(camp.campaign_id)} className="text-xs font-bold text-brand-600 hover:text-brand-700 px-2 py-1 hover:bg-brand-50 rounded-md transition-colors">
+                                        Approve
+                                    </button>
+                                )}
+                            </div>
                         </div>
                   </motion.div>
               )) : (
