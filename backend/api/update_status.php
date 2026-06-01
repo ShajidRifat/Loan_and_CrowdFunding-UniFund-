@@ -95,6 +95,11 @@ try {
     echo json_encode(["message" => ucfirst($type) . " updated successfully"]);
 
 } catch (Exception $e) {
+    try {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+    } catch (Exception $rollbackEx) {
+        // Ignore rollback failure
+    }
     http_response_code(500);
     echo json_encode(["message" => "Error: " . $e->getMessage()]);
 }
