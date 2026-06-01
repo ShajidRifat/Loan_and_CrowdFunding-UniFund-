@@ -46,6 +46,8 @@ try {
         FROM campaigns c 
         JOIN users u ON c.student_id = u.user_id 
         JOIN campaign_statuses s ON c.status_id = s.status_id 
+        WHERE s.status_name = 'draft' 
+           OR (s.status_name = 'active' AND c.end_date >= CURRENT_DATE())
         ORDER BY c.created_at DESC
     ");
     $response['campaigns'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
