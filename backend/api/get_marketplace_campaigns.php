@@ -15,6 +15,7 @@ try {
             c.description,
             c.category_id,
             c.goal_amount,
+            c.image_url,
             s.raised_amount,
             s.donor_count,
             c.end_date as deadline,
