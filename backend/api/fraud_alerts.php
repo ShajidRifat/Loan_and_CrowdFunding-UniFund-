@@ -57,6 +57,23 @@ try {
 
         $userId = $user['id'];
         $insertStmt->execute([$userId, $alertType, $severity, $description, $userId, $alertType]);
+
+        // If a brand-new alert was successfully inserted, apply score penalty
+        if ($insertStmt->rowCount() > 0) {
+            // Only apply score penalty if the target user has a student role
+            $role_stmt = $pdo->prepare("SELECT r.role_name FROM users u JOIN roles r ON u.role_id = r.role_id WHERE u.user_id = ?");
+            $role_stmt->execute([$userId]);
+            $role_name = $role_stmt->fetchColumn();
+
+            if ($role_name === 'student') {
+                require_once 'core/ScoreEngine.php';
+                try {
+                    ScoreEngine::applyEvent((int)$userId, 'EVT_08', 'fraud_detection_system', $pdo);
+                } catch (Exception $e) {
+                    error_log("Failed to trigger EVT_08 for student $userId: " . $e->getMessage());
+                }
+            }
+        }
     }
 
     // 2. Fetch Active Alerts from `fraud_alerts` table
