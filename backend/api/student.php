@@ -45,11 +45,35 @@ try {
     $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($profile) {
-        $stmt = $pdo->prepare("SELECT tier_name FROM risk_tiers WHERE ? BETWEEN min_score AND max_score");
-        $stmt->execute([$profile['credit_score']]);
-        $profile['risk_tier'] = $stmt->fetchColumn() ?: 'Unknown';
+        $stmt = $pdo->prepare("
+            SELECT tier_name, badge_color, max_loan_amount 
+            FROM risk_tiers 
+            WHERE ? >= min_score AND ? <= max_score
+        ");
+        $stmt->execute([$profile['credit_score'], $profile['credit_score']]);
+        $tier = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($tier) {
+            $profile['risk_tier'] = $tier['tier_name'];
+            $profile['badge_color'] = $tier['badge_color'];
+            $profile['max_loan_amount'] = (int)$tier['max_loan_amount'];
+        } else {
+            $profile['risk_tier'] = 'Unknown';
+            $profile['badge_color'] = 'slate';
+            $profile['max_loan_amount'] = 0;
+        }
     }
     $response['profile'] = $profile;
+
+    // Credit Score History
+    $stmt = $pdo->prepare("
+        SELECT event_id, event_name, delta, score_before, score_after, triggered_by, created_at
+        FROM credit_score_history
+        WHERE student_id = ?
+        ORDER BY created_at DESC
+    ");
+    $stmt->execute([$user_id]);
+    $response['score_history'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Total Debt Calculation
     $stmt = $pdo->prepare("
@@ -91,6 +115,7 @@ try {
             li.installment_id,
             li.loan_id,
             li.installment_amount as amount_due,
+            li.installment_amount as installment_amount,
             li.due_date,
             l.title as loan_title
         FROM loan_installments li
